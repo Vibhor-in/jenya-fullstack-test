@@ -11,10 +11,12 @@ const LoginPage = () => {
   const [formData, setFormData] = useState({ username: '', password: '' });
   const [showPassword, setShowPassword] = useState(false);
 
+  // Reset form on every mount so stale values never persist
   useEffect(() => {
+    setFormData({ username: '', password: '' });
+    dispatch(clearError());
     if (token) navigate('/', { replace: true });
-    return () => dispatch(clearError());
-  }, [token, navigate, dispatch]);
+  }, []);
 
   const handleChange = (e) => {
     setFormData((prev) => ({ ...prev, [e.target.name]: e.target.value }));
@@ -31,8 +33,16 @@ const LoginPage = () => {
     }
   };
 
-  const fillDemo = () => {
-    setFormData({ username: 'emilys', password: 'emilyspass' });
+  // One-click demo login — no extra button press needed
+  const fillDemo = async () => {
+    const creds = { username: 'emilys', password: 'emilyspass' };
+    setFormData(creds);
+    try {
+      await dispatch(loginUser(creds)).unwrap();
+      navigate('/', { replace: true });
+    } catch {
+      // error shown in UI
+    }
   };
 
   return (
@@ -57,7 +67,7 @@ const LoginPage = () => {
             </div>
           )}
 
-          <form onSubmit={handleSubmit} className="login-form">
+          <form onSubmit={handleSubmit} className="login-form" autoComplete="off">
             <div className="form-group">
               <label htmlFor="username" className="form-label">Username</label>
               <div className="input-wrapper">
@@ -70,7 +80,7 @@ const LoginPage = () => {
                   onChange={handleChange}
                   className="form-input"
                   placeholder="Enter your username"
-                  autoComplete="username"
+                  autoComplete="new-password"
                   required
                 />
               </div>
@@ -88,7 +98,7 @@ const LoginPage = () => {
                   onChange={handleChange}
                   className="form-input"
                   placeholder="Enter your password"
-                  autoComplete="current-password"
+                  autoComplete="new-password"
                   required
                 />
                 <button
