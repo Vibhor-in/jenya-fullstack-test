@@ -11,11 +11,15 @@ const LoginPage = () => {
   const [formData, setFormData] = useState({ username: '', password: '' });
   const [showPassword, setShowPassword] = useState(false);
 
-  // Reset form on every mount so stale values never persist
+  // Redirect whenever token appears in state (handles dialog interruptions too)
+  useEffect(() => {
+    if (token) navigate('/', { replace: true });
+  }, [token, navigate]);
+
+  // Reset form & errors on mount
   useEffect(() => {
     setFormData({ username: '', password: '' });
     dispatch(clearError());
-    if (token) navigate('/', { replace: true });
   }, []);
 
   const handleChange = (e) => {
@@ -27,7 +31,7 @@ const LoginPage = () => {
     if (!formData.username.trim() || !formData.password.trim()) return;
     try {
       await dispatch(loginUser(formData)).unwrap();
-      navigate('/', { replace: true });
+      window.location.href = '/';
     } catch {
       // error is already handled in Redux state
     }
@@ -39,7 +43,7 @@ const LoginPage = () => {
     setFormData(creds);
     try {
       await dispatch(loginUser(creds)).unwrap();
-      navigate('/', { replace: true });
+      window.location.href = '/';
     } catch {
       // error shown in UI
     }
